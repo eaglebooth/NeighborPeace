@@ -1,5 +1,5 @@
 {
-  "name": "adproof-escrow",
+  "name": "neighborpeace-frontend",
   "framework": "nextjs",
   "installCommand": "npm install",
   "buildCommand": "npm run build",
