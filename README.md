@@ -52,4 +52,4 @@ Open [http://localhost:3050](http://localhost:3050) in your browser.
 ## 🔗 Deployed Contracts & Live Demos
 
 * **Deployed Contract Address**: `0x3FF57F2B5C3d03962f122d20A82f25b6f653E504` on GenLayer Studio (Studionet)
-* **Live Vercel Application**: [https://neighborpeace.vercel.app](https://neighborpeace.vercel.app)
+* **Live Vercel Application**: [https://neighborpeace-frontend.vercel.app](https://neighborpeace-frontend.vercel.app)
