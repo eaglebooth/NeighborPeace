@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <footer className="bg-[var(--evergreen-dark)] text-[#e6eee3] py-12">
         <div className="page-wrap grid md:grid-cols-[1fr_auto] gap-8 items-end">
           <div><div className="display-font text-3xl mb-3">Peace needs a process.</div><p className="text-[#bdd0bb] max-w-xl leading-7">Two-sided evidence, semantic AI consensus, one appeal, and a settlement trail anyone can inspect.</p></div>
-          <div className="text-sm text-[#bdd0bb] md:text-right"><div>GenLayer Studio · Studionet</div><div className="mt-2">Contract V2 awaiting deployment</div></div>
+          <div className="text-sm text-[#bdd0bb] md:text-right"><div>GenLayer Studio · Studionet</div><div className="mt-2">{contract ? "Contract V2 Active" : "Contract V2 awaiting deployment"}</div></div>
         </div>
       </footer>
     </>
