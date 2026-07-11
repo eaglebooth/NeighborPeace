@@ -1,0 +1,2 @@
+import { WorkflowPage } from "@/components/WorkflowPage";
+export default function JoinPage(){return <WorkflowPage mode="join" eyebrow="Function 01 · register_unit" title="Join with the wallet you control." description="Your connected address becomes the unit owner on-chain. No owner address can be typed or substituted by another user." steps={["Connect the wallet that will represent this unit.","Enter the official unit name and at least 50 bond ledger units.","Review and sign the registration transaction once."]}/>}

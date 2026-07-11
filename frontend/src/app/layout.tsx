@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppShell } from "@/components/AppShell";
+import { WalletProvider } from "@/components/WalletProvider";
 
 export const metadata: Metadata = {
-  title: "NeighborPeace - Civic Dispute Escrow & AI Arbitration",
-  description: "GenLayer-native neighborhood noise and litter escrow dispute arbitrator.",
+  title: "NeighborPeace | Fair neighborhood mediation",
+  description: "Two-sided neighborhood evidence review and settlement on GenLayer.",
 };
 
 export default function RootLayout({
@@ -13,7 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <WalletProvider>
+          <AppShell>{children}</AppShell>
+        </WalletProvider>
+      </body>
     </html>
   );
 }

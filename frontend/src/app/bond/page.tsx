@@ -1,0 +1,2 @@
+import { WorkflowPage } from "@/components/WorkflowPage";
+export default function BondPage(){return <WorkflowPage mode="bond" eyebrow="Function 02 · deposit_bond" title="Strengthen your community bond." description="Only the wallet registered to a member ID can add accounting units to that member's bond ledger." steps={["Find your member ID on the Community page.","Connect the same wallet used during registration.","Choose an amount and sign the ledger update."]}/>}
