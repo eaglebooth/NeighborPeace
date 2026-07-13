@@ -30,7 +30,36 @@ class NeighborPeaceContractTests(unittest.TestCase):
         self.assertIn("owner = gl.message.sender_address", self.source)
         self.assertIn('return "NOT_REPORTER_OWNER"', self.source)
         self.assertIn('return "NOT_TARGET_OWNER"', self.source)
-        self.assertIn('return "NOT_MEMBER_OWNER"', self.source)
+        self.assertIn('raise gl.vm.UserError("NOT_MEMBER_OWNER")', self.source)
+
+    def test_bonds_are_real_payable_value(self):
+        self.assertGreaterEqual(self.source.count("@gl.public.write.payable"), 2)
+        self.assertIn("bond = gl.message.value", self.source)
+        self.assertIn("amount = gl.message.value", self.source)
+        self.assertIn("total_bonded", self.source)
+        register = self.source[self.source.index("def register_unit"):self.source.index("def deposit_bond")]
+        deposit = self.source[self.source.index("def deposit_bond"):self.source.index("def file_report")]
+        self.assertIn("raise gl.vm.UserError", register)
+        self.assertIn("raise gl.vm.UserError", deposit)
+
+    def test_settlement_emits_real_value(self):
+        self.assertIn("@gl.evm.contract_interface", self.source)
+        self.assertIn("emit_transfer(value=compensation)", self.source)
+        self.assertIn("emit_transfer(value=treasury_fee)", self.source)
+
+    def test_only_target_can_waive_response(self):
+        self.assertIn('return "ONLY_TARGET_CAN_WAIVE_RESPONSE"', self.source)
+        close_method = self.source[self.source.index("def close_response_window"):self.source.index("def _parse_ruling")]
+        self.assertIn("target_id = self.report_target_units[report_id]", close_method)
+        self.assertNotIn("reporter_id =", close_method)
+
+    def test_appeal_rereads_complete_record(self):
+        appeal_method = self.source[self.source.index("def evaluate_appeal"):self.source.index("def finalize_report")]
+        self.assertIn("evidence_url", appeal_method)
+        self.assertIn("response_url", appeal_method)
+        self.assertIn("appeal_url", appeal_method)
+        self.assertIn("COMPLAINT:", appeal_method)
+        self.assertIn("COUNTER-EVIDENCE:", appeal_method)
 
     def test_dispute_lifecycle_methods_exist(self):
         methods = {

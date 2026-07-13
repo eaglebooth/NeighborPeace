@@ -1,55 +1,78 @@
-# NeighborPeace ⚖️
+# NeighborPeace V3
 
-**NeighborPeace** is a decentralized dispute resolution and violation penalty contract system for apartment complexes or neighborhoods. Residents pool their funds on-chain, and GenLayer AI validators serve as a subjective community jury to evaluate audio/visual evidence (decibel logs, photo proofs) to penalize rule violators, compensating affected neighbors directly.
+NeighborPeace is a GenLayer-native neighborhood mediation protocol. Residents join
+with a real GEN bond, submit two-sided public evidence, receive a semantic AI jury
+ruling, use one authenticated appeal, and finalize an on-chain settlement.
 
----
+## Why GenLayer
 
-## 🛠️ Key Features
+Noise and shared-area litter disputes depend on context, attribution, evidence
+quality, and proportionality. A deterministic contract cannot inspect public web
+evidence and make that subjective judgment fairly. NeighborPeace uses GenLayer web
+access, LLM reasoning, and comparative validator consensus for the core ruling.
 
-* **Communal Escrow Bond**: Residents lock security stakes (escrows) in mock USDC. Violators have fines deducted directly from their bond.
-* **AI Jury Consensus**: GenLayer nodes act as subjective community arbitrators.
-  * **Noise violation check**: Evaluates sound log/log streams to detect noise exceeding 70dB after 10:00 PM.
-  * **Littering audit**: Audits visual photo logs and waste evidence descriptions to verify rule breaking and attribute it to a specific unit.
-* **Automatic Reimbursement**: Fines deducted from guilty offenders are split, transferring 80% to the complainant as compensation, and 20% to the civic treasury pool.
-* **Premium Mint-Green Palette**: Custom slate-dark background with glowing mint green accents (`#00F6A2`).
+## V3 value flow
 
----
+- `register_unit` is payable and requires at least 20 GEN.
+- `deposit_bond` is payable and credits the caller's registered unit.
+- A guilty ruling sets a fixed GEN fine by severity: 5, 10, or 15 GEN.
+- `finalize_report` debits the accused unit's real bond exactly once.
+- 80% is emitted to the reporting neighbor and 20% to the treasury for standard
+  fine tiers.
+- Contract state exposes balance, bonded value, compensation, and treasury totals.
 
-## 📁 Repository Structure
+GEN values are stored and sent in wei (`1 GEN = 10^18 wei`). External payout
+messages execute when the parent transaction finalizes and should be inspected as
+triggered transactions in Explorer.
 
-```bash
-├── contracts/
-│   └── NeighborPeace.py         # Intelligent GenLayer Smart Contract
-└── frontend/
-    ├── src/
-    │   ├── app/                 # Next.js pages & styling setup
-    │   └── lib/                 # Web3 GenLayer client connectors
-    └── .env.local               # Local environment configurations
+## Authorization and lifecycle
+
+1. The connected wallet becomes the unit owner; no owner address is accepted as an
+   input parameter.
+2. Only that owner can add to its bond or file a report as that unit.
+3. Only the accused unit can submit or waive counter-evidence. The reporter cannot
+   close the response stage.
+4. The first jury reads complaint and response evidence.
+5. Either authenticated party may use the single appeal.
+6. The appeal jury rereads the complete original record plus new appeal evidence.
+7. Finalization is idempotent and emits real GEN transfers only for a guilty ruling.
+
+## Consensus
+
+AI rulings use `gl.eq_principle.prompt_comparative`. Verdict and severity must match
+exactly because they control settlement; reason wording may differ when grounded in
+compatible evidence. Unreadable or malformed evidence becomes `NEEDS_EVIDENCE`.
+
+## Repository
+
+```text
+contracts/   Intelligent Contract
+frontend/    Next.js application using genlayer-js
+tests/       Contract structure and security regression checks
+docs/        Contract review notes
+plans/       Rebuild plan
 ```
 
----
+## Local verification
 
-## 🚀 Run Locally
-
-### 1. Smart Contract Verification
-Verify AST syntax parser check:
 ```bash
-python -c "import ast; ast.parse(open('contracts/NeighborPeace.py', encoding='utf-8').read())"
-```
-
-### 2. Frontend Launch
-Run the frontend server on port `3050`:
-```bash
+python -m unittest discover -s tests -v
 cd frontend
 npm install
+npm run lint
+npm run build
 npm run dev -- -p 3050
 ```
 
-Open [http://localhost:3050](http://localhost:3050) in your browser.
+Open `http://localhost:3050`.
 
----
+## Deployment
 
-## 🔗 Deployed Contracts & Live Demos
+NeighborPeace V3 is deployed on GenLayer Studio / Studionet:
 
-* **Deployed Contract Address**: `0x016174D1115f9423F7c66258c16Fe01cC7031E3c` on GenLayer Studio (Studionet)
-* **Live Vercel Application**: [https://neighborpeace-frontend.vercel.app](https://neighborpeace-frontend.vercel.app)
+```text
+0x97EAb701d20e66355Ad45067A364341C51B96Bd9
+```
+
+The frontend uses `genlayer-js` for live contract reads, payable writes, finalized
+receipt verification, and post-write state synchronization.

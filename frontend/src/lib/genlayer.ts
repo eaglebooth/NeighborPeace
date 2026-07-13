@@ -36,6 +36,7 @@ const client = createClient({
 });
 
 type GenLayerRuntimeClient = {
+  connect?: (networkName: NetworkName) => Promise<unknown>;
   readContract: (args: {
     address: unknown;
     functionName: string;
@@ -112,6 +113,7 @@ export async function writeContract(
   functionName: string,
   args: unknown[] = [],
   contractAddress?: string,
+  value: bigint = BigInt(0),
 ): Promise<ContractResult> {
   if (typeof window === "undefined") {
     return { success: false, error: "Contract writes are only available in the browser" };
@@ -142,11 +144,14 @@ export async function writeContract(
     });
 
     const runtimeClient = writeClient as unknown as GenLayerRuntimeClient;
+    if (runtimeClient.connect) {
+      await runtimeClient.connect(network);
+    }
     const hash = await runtimeClient.writeContract({
       address,
       functionName,
       args,
-      value: BigInt(0),
+      value,
     });
 
     const receipt = await runtimeClient.waitForTransactionReceipt({
@@ -154,12 +159,12 @@ export async function writeContract(
       status: TransactionStatus.FINALIZED,
     });
 
-    if (receipt.txExecutionResultName === ExecutionResult.FINISHED_WITH_ERROR) {
+    if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
       return {
         success: false,
         hash,
         status: receipt.statusName,
-        error: "Contract execution failed",
+        error: `Contract execution did not finish successfully: ${receipt.txExecutionResultName || "UNKNOWN"}`,
       };
     }
 

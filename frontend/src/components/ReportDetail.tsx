@@ -9,13 +9,13 @@ import type { Report } from "@/lib/types";
 export function ReportDetail({ id }: { id: string }) {
   const contract = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
   const [report, setReport] = useState<Report | null>(null);
-  const [message, setMessage] = useState(contract ? "Loading report..." : "NeighborPeace V2 is not deployed yet.");
+  const [message, setMessage] = useState(contract ? "Loading report..." : "NeighborPeace V3 is not deployed yet.");
 
   async function sync() {
     if (!contract) return;
     const loaded = await loadReport(contract, id);
     if (loaded.error) setMessage(loaded.error);
-    else { setReport(loaded.report); setMessage("Synced from NeighborPeace V2"); }
+    else { setReport(loaded.report); setMessage("Synced from NeighborPeace V3"); }
   }
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function ReportDetail({ id }: { id: string }) {
     void loadReport(contract, id).then((loaded) => {
       if (cancelled) return;
       if (loaded.error) setMessage(loaded.error);
-      else { setReport(loaded.report); setMessage("Synced from NeighborPeace V2"); }
+      else { setReport(loaded.report); setMessage("Synced from NeighborPeace V3"); }
     });
     return () => { cancelled = true; };
   }, [contract, id]);
@@ -33,7 +33,7 @@ export function ReportDetail({ id }: { id: string }) {
 
   const actions = [
     ["AWAITING_RESPONSE", "Submit response", `/reports/${id}/respond`],
-    ["AWAITING_RESPONSE", "Close response window", `/reports/${id}/close-response`],
+    ["AWAITING_RESPONSE", "Waive counter-evidence", `/reports/${id}/close-response`],
     ["READY_FOR_REVIEW", "Run first jury", `/reports/${id}/review`],
     ["RULING_PROPOSED", "Open appeal", `/reports/${id}/appeal`],
     ["APPEAL_PENDING", "Run appeal jury", `/reports/${id}/appeal/review`],
@@ -41,7 +41,18 @@ export function ReportDetail({ id }: { id: string }) {
     ["APPEAL_RULING", "Finalize appeal ruling", `/reports/${id}/finalize`],
   ].filter(([status]) => status === report.status);
 
-  return <div className="page-wrap pb-24"><div className="grid lg:grid-cols-[.72fr_1.28fr] gap-14"><aside><span className="status-pill"><span className="status-dot live"/>{report.status}</span><h2 className="display-font text-5xl my-5">{report.violation_type}</h2><p className="text-[var(--ink-soft)] leading-7">{report.reason}</p><div className="mt-8 grid gap-3">{actions.map(([,label,href])=><Link key={href} href={href} className={label.includes("Finalize") ? "button-danger" : "button-primary"}>{label}<ArrowRight size={16}/></Link>)}</div></aside><div className="border-t border-[var(--line)]">{[["Incident reference",report.incident_ref],["Reporter / accused",`Member ${report.reporter_id} / Member ${report.target_id}`],["Verdict",report.verdict],["Confidence",`${report.confidence}%`],["Proposed fine",report.fine],["Compensation",report.compensation],["Treasury fee",report.treasury_fee],["Policy version",report.policy_version]].map(([label,value])=><div key={label} className="grid grid-cols-[160px_1fr] gap-6 py-5 border-b border-[var(--line)]"><span className="record-meta">{label}</span><strong>{value}</strong></div>)}{[["Complaint evidence",report.evidence_url],["Response evidence",report.response_url],["Appeal evidence",report.appeal_url]].filter(([,url])=>url).map(([label,url])=><a key={label} target="_blank" rel="noreferrer" href={url} className="grid grid-cols-[160px_1fr_auto] gap-6 py-5 border-b border-[var(--line)]"><span className="record-meta">{label}</span><span className="truncate">{url}</span><ExternalLink size={16}/></a>)}</div></div></div>;
+  const facts = [
+    ["Incident reference", report.incident_ref],
+    ["Reporter / accused", `Member ${report.reporter_id} / Member ${report.target_id}`],
+    ["Verdict", report.verdict],
+    ["Confidence", `${report.confidence}%`],
+    ["Proposed fine", formatWei(report.fine)],
+    ["Compensation", formatWei(report.compensation)],
+    ["Treasury fee", formatWei(report.treasury_fee)],
+    ["Policy version", report.policy_version],
+  ];
+
+  return <div className="page-wrap pb-24"><div className="grid lg:grid-cols-[.72fr_1.28fr] gap-14"><aside><span className="status-pill"><span className="status-dot live"/>{report.status}</span><h2 className="display-font text-5xl my-5">{report.violation_type}</h2><p className="text-[var(--ink-soft)] leading-7">{report.reason}</p><div className="mt-8 grid gap-3">{actions.map(([,label,href])=><Link key={href} href={href} className={label.includes("Finalize") ? "button-danger" : "button-primary"}>{label}<ArrowRight size={16}/></Link>)}</div></aside><div className="border-t border-[var(--line)]">{facts.map(([label,value])=><div key={label} className="grid grid-cols-[160px_1fr] gap-6 py-5 border-b border-[var(--line)]"><span className="record-meta">{label}</span><strong>{value}</strong></div>)}{[["Complaint evidence",report.evidence_url],["Response evidence",report.response_url],["Appeal evidence",report.appeal_url]].filter(([,url])=>url).map(([label,url])=><a key={label} target="_blank" rel="noreferrer" href={url} className="grid grid-cols-[160px_1fr_auto] gap-6 py-5 border-b border-[var(--line)]"><span className="record-meta">{label}</span><span className="truncate">{url}</span><ExternalLink size={16}/></a>)}</div></div></div>;
 }
 
 async function loadReport(contract: string, id: string): Promise<{ report: Report | null; error: string }> {
@@ -53,4 +64,11 @@ async function loadReport(contract: string, id: string): Promise<{ report: Repor
   } catch {
     return { report: null, error: "The contract returned malformed report data." };
   }
+}
+
+function formatWei(value: string) {
+  const amount = BigInt(value || "0");
+  const whole = amount / BigInt("1000000000000000000");
+  const fraction = (amount % BigInt("1000000000000000000")).toString().padStart(18, "0").replace(/0+$/, "");
+  return `${whole}${fraction ? `.${fraction}` : ""} GEN`;
 }
