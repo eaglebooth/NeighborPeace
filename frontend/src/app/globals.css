@@ -118,6 +118,10 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 .record-row { display: grid; grid-template-columns: 90px 1.2fr 1fr 150px 24px; align-items: center; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--line); }
 .record-row:hover { background: rgba(230,238,227,.45); }
 .record-meta { color: var(--ink-soft); font-size: .85rem; }
+.contract-state-list { border-top: 1px solid var(--line); }
+.contract-state-row { display: grid; grid-template-columns: minmax(190px, .45fr) minmax(0, 1fr); align-items: baseline; gap: 32px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.contract-state-key { color: var(--ink-soft); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+.contract-state-value { min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; overflow-wrap: anywhere; }
 
 @media (max-width: 850px) {
   .section-space { padding: 64px 0; }
@@ -128,6 +132,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 
 @media (max-width: 620px) {
   .page-wrap { width: min(100% - 28px, 1180px); }
+  .contract-state-row { grid-template-columns: 1fr; gap: 8px; }
   .form-grid { grid-template-columns: 1fr; }
   .section-space { padding: 50px 0; }
 }
