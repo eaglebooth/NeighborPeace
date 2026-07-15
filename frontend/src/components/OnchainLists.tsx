@@ -5,9 +5,10 @@ import { ArrowUpRight, RefreshCw, Users, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { readContract } from "@/lib/genlayer";
 import type { Member, Report } from "@/lib/types";
+import { useContractAddress } from "@/lib/contract-address";
 
 export function OnchainList({ kind }: { kind: "members" | "reports" }) {
-  const contract = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+  const contract = useContractAddress();
   const [records, setRecords] = useState<(Member | Report)[]>([]);
   const [message, setMessage] = useState(contract ? "Loading contract state..." : "NeighborPeace V3 is awaiting deployment.");
   const [busy, setBusy] = useState(false);

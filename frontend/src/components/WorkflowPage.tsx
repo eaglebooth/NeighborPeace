@@ -1,7 +1,7 @@
 import { ContractGate } from "./ContractGate";
 import { WorkflowForm } from "./WorkflowForm";
 
-type Mode = "join" | "bond" | "report" | "respond" | "close" | "review" | "appeal" | "appeal-review" | "finalize";
+type Mode = "join" | "bond" | "report" | "respond" | "close" | "evidence" | "review" | "appeal" | "appeal-review" | "finalize";
 
 export function WorkflowPage({ mode, eyebrow, title, description, steps, reportId }: { mode: Mode; eyebrow: string; title: string; description: string; steps: string[]; reportId?: string }) {
   return (

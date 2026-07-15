@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ExternalLink, Handshake, Menu, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import { useWallet } from "./WalletProvider";
+import { useContractAddress } from "@/lib/contract-address";
 
 const links = [
   ["Community", "/community"],
@@ -17,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const { address, busy, connect } = useWallet();
   const [open, setOpen] = useState(false);
-  const contract = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+  const contract = useContractAddress();
   const explorer = contract ? `https://explorer-studio.genlayer.com/address/${contract}` : "https://explorer-studio.genlayer.com/contracts";
 
   return (

@@ -27,7 +27,7 @@ class NeighborPeaceContractTests(unittest.TestCase):
         self.assertIn("gl.eq_principle.prompt_comparative(run_appeal, principle)", self.source)
 
     def test_owner_is_derived_from_message_sender(self):
-        self.assertIn("owner = gl.message.sender_address", self.source)
+        self.assertIn("owner = gl.message.sender_address.as_hex", self.source)
         self.assertIn('return "NOT_REPORTER_OWNER"', self.source)
         self.assertIn('return "NOT_TARGET_OWNER"', self.source)
         self.assertIn('raise gl.vm.UserError("NOT_MEMBER_OWNER")', self.source)
@@ -47,11 +47,18 @@ class NeighborPeaceContractTests(unittest.TestCase):
         self.assertIn("emit_transfer(value=compensation)", self.source)
         self.assertIn("emit_transfer(value=treasury_fee)", self.source)
 
-    def test_only_target_can_waive_response(self):
-        self.assertIn('return "ONLY_TARGET_CAN_WAIVE_RESPONSE"', self.source)
+    def test_persistent_identity_uses_supported_string_storage(self):
+        self.assertIn("treasury_owner: str", self.source)
+        self.assertIn("member_owners: TreeMap[u256, str]", self.source)
+        self.assertIn("report_appeal_owners: TreeMap[u256, str]", self.source)
+        self.assertNotIn("TreeMap[u256, Address]", self.source)
+
+    def test_response_stage_has_authenticated_timeout_path(self):
         close_method = self.source[self.source.index("def close_response_window"):self.source.index("def _parse_ruling")]
         self.assertIn("target_id = self.report_target_units[report_id]", close_method)
-        self.assertNotIn("reporter_id =", close_method)
+        self.assertIn("reporter_id = self.report_reporter_units[report_id]", close_method)
+        self.assertIn('return "RESPONSE_WINDOW_OPEN"', close_method)
+        self.assertIn('return "NOT_CASE_PARTY"', close_method)
 
     def test_appeal_rereads_complete_record(self):
         appeal_method = self.source[self.source.index("def evaluate_appeal"):self.source.index("def finalize_report")]
@@ -73,6 +80,7 @@ class NeighborPeaceContractTests(unittest.TestCase):
             "file_report",
             "submit_response",
             "close_response_window",
+            "resubmit_evidence",
             "evaluate_report",
             "appeal_report",
             "evaluate_appeal",
@@ -86,11 +94,39 @@ class NeighborPeaceContractTests(unittest.TestCase):
         self.assertIn('return "ALREADY_FINALIZED"', self.source)
         self.assertIn('self.report_finalized[report_id] = u256(1)', self.source)
         self.assertIn('self.report_statuses[report_id] = "FINALIZED"', self.source)
+        self.assertIn('return "APPEAL_WINDOW_OPEN"', self.source)
+
+    def test_deadlines_and_evidence_recovery_prevent_stuck_cases(self):
+        self.assertIn("report_response_deadlines: TreeMap[u256, u256]", self.source)
+        self.assertIn("report_appeal_deadlines: TreeMap[u256, u256]", self.source)
+        self.assertGreaterEqual(self.source.count("gl.get_block_timestamp() + u256(86400)"), 2)
+        self.assertIn('return "APPEAL_WINDOW_CLOSED"', self.source)
+        self.assertIn('return "EVIDENCE_REVISION_LIMIT"', self.source)
+        self.assertIn('self.report_statuses[report_id] = "READY_FOR_REVIEW"', self.source)
 
     def test_replay_and_web_failure_guards_exist(self):
         self.assertIn('return "INCIDENT_ALREADY_FILED"', self.source)
+        self.assertIn("incident_key_registered: TreeMap[u256, u256]", self.source)
+        self.assertIn("self.incident_key_registered[incident_key] == u256(1)", self.source)
+        self.assertNotIn("while i < self.report_count", self.source)
+        self.assertIn("member_id_by_owner: TreeMap[u256, u256]", self.source)
+        self.assertNotIn("while i < self.member_count", self.source)
         self.assertGreaterEqual(self.source.count('"verdict": "NEEDS_EVIDENCE"'), 2)
         self.assertIn('return "INVALID_AI_RESPONSE"', self.source)
+
+    def test_broad_residential_policy_taxonomy(self):
+        for violation_type in (
+            "NOISE",
+            "LITTER",
+            "PARKING",
+            "PET",
+            "SMOKE_ODOR",
+            "PROPERTY_DAMAGE",
+            "SAFETY_OBSTRUCTION",
+            "COMMON_AREA_MISUSE",
+        ):
+            self.assertIn(f'violation_type == "{violation_type}"', self.source)
+        self.assertIn("violation_policy = self._policy_for(violation_type)", self.source)
 
     def test_public_signatures_use_supported_types(self):
         forbidden = {"int", "float", "bool", "list", "dict", "tuple"}

@@ -6,6 +6,7 @@ import {
   testnetBradbury,
 } from "genlayer-js/chains";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
+import { resolveContractAddress } from "./contract-address";
 
 type NetworkName =
   | "localnet"
@@ -67,7 +68,7 @@ export type ContractResult = {
 };
 
 function getContractAddress(contractAddress?: string) {
-  return contractAddress || process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+  return resolveContractAddress(contractAddress);
 }
 
 export async function readContract(
@@ -156,7 +157,7 @@ export async function writeContract(
 
     const receipt = await runtimeClient.waitForTransactionReceipt({
       hash: hash as `0x${string}`,
-      status: TransactionStatus.FINALIZED,
+      status: TransactionStatus.ACCEPTED,
     });
 
     if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {

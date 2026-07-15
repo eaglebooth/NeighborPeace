@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { CircleDot, ExternalLink } from "lucide-react";
+import { useContractAddress } from "@/lib/contract-address";
 
 export function ContractGate() {
-  const address = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+  const address = useContractAddress();
   return (
     <div className={address ? "notice success" : "notice"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
